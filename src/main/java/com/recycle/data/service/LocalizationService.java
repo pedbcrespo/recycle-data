@@ -1,8 +1,6 @@
 package com.recycle.data.service;
 
-import com.recycle.data.enums.Region;
 import com.recycle.data.model.City;
-import com.recycle.data.model.District;
 import com.recycle.data.model.Location;
 import com.recycle.data.model.State;
 import com.recycle.data.model.dto.IbgeCityDto;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Service
@@ -50,7 +47,6 @@ public class LocalizationService {
 
     public List<LocationDto> consumeApiCitiesByStates(LocationRequest request) {
         List<State> states;
-        List<LocationDto> response = null;
         if(!request.hasStateListToGet()) return null;
         if(request.getStateIds() != null && !request.getStateIds().isEmpty()) {
             states = stateRepository.findAllById(request.getStateIds());
@@ -80,14 +76,16 @@ public class LocalizationService {
     @Transactional
     private void getCities(State state) {
         String url = getCitiesUrl(state.getUf());
-        ParameterizedTypeReference<List<IbgeCityDto>> typeRef = new ParameterizedTypeReference<List<IbgeCityDto>>() {};
+        ParameterizedTypeReference<List<IbgeCityDto>> typeRef = new ParameterizedTypeReference<>() {
+        };
         fetchAndSave(url, typeRef, state, cityRepository);
     }
 
     @Transactional
     private void getDistricts(City city) {
         String url = getDistrictsUrl(city.getId());
-        ParameterizedTypeReference<List<IbgeDistrictDto>> typeRef = new ParameterizedTypeReference<List<IbgeDistrictDto>>() {};
+        ParameterizedTypeReference<List<IbgeDistrictDto>> typeRef = new ParameterizedTypeReference<>() {
+        };
         fetchAndSave(url, typeRef, city, districtRepository);
     }
 
