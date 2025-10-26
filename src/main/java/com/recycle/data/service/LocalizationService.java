@@ -2,11 +2,14 @@ package com.recycle.data.service;
 
 import com.recycle.data.enums.Region;
 import com.recycle.data.model.City;
+import com.recycle.data.model.District;
 import com.recycle.data.model.Location;
 import com.recycle.data.model.State;
-import com.recycle.data.model.dto.CityDto;
-import com.recycle.data.model.dto.DistrictDto;
+import com.recycle.data.model.dto.IbgeCityDto;
+import com.recycle.data.model.dto.IbgeDistrictDto;
+import com.recycle.data.model.dto.IbgeLocationDto;
 import com.recycle.data.model.dto.LocationDto;
+import com.recycle.data.model.request.LocationRequest;
 import com.recycle.data.repository.CityRepository;
 import com.recycle.data.repository.DistrictRepository;
 import com.recycle.data.repository.StateRepository;
@@ -37,59 +40,54 @@ public class LocalizationService {
 
     private final String baseUrl = "https://servicodados.ibge.gov.br/api/v1/localidades";
 
-    public void consumeApiCitiesByStates() {
-        List<State> north = stateRepository.findByRegion(Region.NORTH);
-        List<State> northeast = stateRepository.findByRegion(Region.NORTHEAST);
-        List<State> southeast = stateRepository.findByRegion(Region.SOUTHEAST);
-        List<State> south = stateRepository.findByRegion(Region.SOUTH);
-        List<State> midwest = stateRepository.findByRegion(Region.MIDWEST);
-
-        List<CompletableFuture<Void>> futures = List.of(
-                CompletableFuture.runAsync(() -> processStates(north)),
-                CompletableFuture.runAsync(() -> processStates(northeast)),
-                CompletableFuture.runAsync(() -> processStates(southeast)),
-                CompletableFuture.runAsync(() -> processStates(south)),
-                CompletableFuture.runAsync(() -> processStates(midwest))
-        );
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    public List<State> getStates() {
+        return stateRepository.findAll();
     }
 
-    public void consumeApiDistrictsByCities() {
-        List<City> north = cityRepository.findByStateRegion(Region.NORTH);
-        List<City> northeast = cityRepository.findByStateRegion(Region.NORTHEAST);
-        List<City> southeast = cityRepository.findByStateRegion(Region.SOUTHEAST);
-        List<City> south = cityRepository.findByStateRegion(Region.SOUTH);
-        List<City> midwest = cityRepository.findByStateRegion(Region.MIDWEST);
-
-        List<CompletableFuture<Void>> futures = List.of(
-                CompletableFuture.runAsync(() -> processCities(north)),
-                CompletableFuture.runAsync(() -> processCities(northeast)),
-                CompletableFuture.runAsync(() -> processCities(southeast)),
-                CompletableFuture.runAsync(() -> processCities(south)),
-                CompletableFuture.runAsync(() -> processCities(midwest))
-        );
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    public List<LocationDto> getCities(Long stateId) {
+        return cityRepository.findByStateId(stateId).stream().map(LocationDto::new).toList();
     }
 
-    private void processCities(List<City> cities) {
+    public List<LocationDto> consumeApiCitiesByStates(LocationRequest request) {
+        List<State> states;
+        List<LocationDto> response = null;
+        if(!request.hasStateListToGet()) return null;
+        if(request.getStateIds() != null && !request.getStateIds().isEmpty()) {
+            states = stateRepository.findAllById(request.getStateIds());
+        }
+        else {
+            states = stateRepository.findAllByUfIn(request.getUfs());
+        }
+        return processStates(states);
+    }
+
+    public List<LocationDto> consumeApiDistrictsByCities(LocationRequest request) {
+        if(!request.hasCityListToGet()) return null;
+        List<City> cities = cityRepository.findAllById(request.getCityIds());
+        return processCities(cities);
+    }
+
+    private List<LocationDto> processCities(List<City> cities) {
         process(cities, this::getDistricts);
+        return districtRepository.findByCityIdIn(cities.stream().map(City::getId).toList()).stream().map(LocationDto::new).toList();
     }
 
-    private void processStates(List<State> states) {
+    private List<LocationDto> processStates(List<State> states) {
         process(states, this::getCities);
+        return cityRepository.findByStateIdIn(states.stream().map(State::getId).toList()).stream().map(LocationDto::new).toList();
     }
 
     @Transactional
     private void getCities(State state) {
         String url = getCitiesUrl(state.getUf());
-        ParameterizedTypeReference<List<CityDto>> typeRef = new ParameterizedTypeReference<List<CityDto>>() {};
+        ParameterizedTypeReference<List<IbgeCityDto>> typeRef = new ParameterizedTypeReference<List<IbgeCityDto>>() {};
         fetchAndSave(url, typeRef, state, cityRepository);
     }
 
     @Transactional
     private void getDistricts(City city) {
         String url = getDistrictsUrl(city.getId());
-        ParameterizedTypeReference<List<DistrictDto>> typeRef = new ParameterizedTypeReference<List<DistrictDto>>() {};
+        ParameterizedTypeReference<List<IbgeDistrictDto>> typeRef = new ParameterizedTypeReference<List<IbgeDistrictDto>>() {};
         fetchAndSave(url, typeRef, city, districtRepository);
     }
 
@@ -112,7 +110,7 @@ public class LocalizationService {
         }
     }
 
-    private <D extends LocationDto<E, P>, E, P> void fetchAndSave(String url, ParameterizedTypeReference<List<D>> typeRef, P parent, JpaRepository<E, Long> repository) {
+    private <D extends IbgeLocationDto<E, P>, E, P> void fetchAndSave(String url, ParameterizedTypeReference<List<D>> typeRef, P parent, JpaRepository<E, Long> repository) {
         Collection<D> dtos = service.consume(url, typeRef);
         List<E> entities = dtos.stream()
                 .map(dto -> dto.generate(parent))

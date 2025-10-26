@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface CityRepository extends JpaRepository<City, Long> {
     List<City> findByStateRegion(Region region);
+    List<City> findByStateId(Long stateId);
+    List<City> findByStateIdIn(List<Long> stateIds);
+    List<City> findByStateUfIn(List<String> ufs);
 }

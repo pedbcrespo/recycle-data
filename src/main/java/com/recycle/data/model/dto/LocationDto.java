@@ -1,5 +1,16 @@
 package com.recycle.data.model.dto;
 
-public abstract class LocationDto<E, P> {
-    public abstract E generate(P parent);
+import com.recycle.data.model.Location;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter@Setter
+public class LocationDto {
+    private Long id;
+    private String name;
+
+    public LocationDto(Location location) {
+        this.id = location.getId();
+        this.name = location.getName();
+    }
 }

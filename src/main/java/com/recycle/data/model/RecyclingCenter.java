@@ -17,6 +17,10 @@ public class RecyclingCenter {
     private String name;
     @Lob
     private String address;
+    @JoinColumn(name = "city_id", referencedColumnName = "id")
+    @ManyToOne
+    private City city;
+
 
     @JoinTable(name = "recycle_product_type", joinColumns = @JoinColumn(name = "recycling_center_id"), inverseJoinColumns = @JoinColumn(name = "product_type_id"))
     @ManyToMany

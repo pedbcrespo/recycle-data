@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface StateRepository extends JpaRepository<State, Long> {
-    public List<State> findByRegion(Region region);
+    List<State> findByRegion(Region region);
+    List<State> findAllByUfIn(List<String> ufs);
 }
