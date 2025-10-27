@@ -1,16 +1,21 @@
 package com.recycle.data.controller;
 
+import java.util.List;
+import java.util.function.Supplier;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.recycle.data.model.State;
 import com.recycle.data.model.dto.LocationDto;
 import com.recycle.data.model.request.LocationRequest;
 import com.recycle.data.service.LocalizationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/locations")
@@ -41,12 +46,11 @@ public class LocationController {
 
 
     private ResponseEntity<List<LocationDto>> execute(Supplier<List<LocationDto>> supplier) {
-        List<LocationDto> response = null;
         try {
-            response = supplier.get();
+            return new ResponseEntity<>(supplier.get(), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        
     }
 }
