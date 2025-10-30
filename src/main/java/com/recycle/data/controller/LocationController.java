@@ -9,16 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.recycle.data.model.State;
 import com.recycle.data.model.dto.LocationDto;
 import com.recycle.data.model.request.LocationRequest;
 import com.recycle.data.service.LocalizationService;
 
-@RestController
-@RequestMapping("/locations")
+// @RestController
+// @RequestMapping("/locations")
 public class LocationController {
 
     @Autowired

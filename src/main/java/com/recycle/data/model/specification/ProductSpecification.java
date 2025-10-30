@@ -1,14 +1,12 @@
 package com.recycle.data.model.specification;
 
+import org.springframework.data.jpa.domain.Specification;
+
 import com.recycle.data.model.Product;
+
+import jakarta.persistence.criteria.Join;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.jpa.domain.Specification;
-import jakarta.persistence.criteria.Join;
-
-
-
-import java.util.Collection;
 
 @Getter@Setter
 public class ProductSpecification {
