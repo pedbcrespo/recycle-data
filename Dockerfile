@@ -1,36 +1,28 @@
-# 1️⃣ Etapa de build
-FROM maven:3.9.9-eclipse-temurin-17 AS builder
-
+# Etapa 1: construir o jar com Maven
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copia o POM e as dependências para cache de build
+# Copia o pom.xml e baixa dependências antes do código-fonte (para aproveitar cache)
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copia o código-fonte e compila o JAR
+# Copia o código-fonte e gera o jar
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# 2️⃣ Etapa final (imagem leve)
-FROM eclipse-temurin:17-jdk-alpine
-
+# Etapa 2: imagem final e leve para execução
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copia o JAR gerado da etapa de build
-COPY --from=builder /app/target/*.jar app.jar
+# Copia o jar da etapa anterior
+COPY --from=build /app/target/*.jar app.jar
 
-# Copia o script wait-for-it
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
-
-# Variáveis de ambiente (podem vir do docker-compose)
-ENV MYSQL_HOST=mysql
-ENV MYSQL_PORT=3306
-ENV MONGO_HOST=mongodb
-ENV MONGO_PORT=27017
-
-# Expõe a porta padrão do Spring Boot
+# Expõe a porta 8080 (obrigatório no Cloud Run)
 EXPOSE 8080
 
-# 3️⃣ EntryPoint: espera os bancos antes de iniciar a app
-ENTRYPOINT ["/wait-for-it.sh", "mysql", "3306", "--", "/wait-for-it.sh", "mongodb", "27017", "--", "java", "-jar", "app.jar"]
+# Define a variável PORT e garante que o Spring use ela
+ENV PORT=8080
+ENV JAVA_OPTS=""
+
+# Inicia a aplicação
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
