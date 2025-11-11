@@ -1,5 +1,15 @@
 package com.recycle.data.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.recycle.data.model.City;
 import com.recycle.data.model.Location;
 import com.recycle.data.model.State;
@@ -11,15 +21,6 @@ import com.recycle.data.model.request.LocationRequest;
 import com.recycle.data.repository.CityRepository;
 import com.recycle.data.repository.DistrictRepository;
 import com.recycle.data.repository.StateRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
 
 @Service
 public class LocalizationService {
@@ -43,6 +44,10 @@ public class LocalizationService {
 
     public List<LocationDto> getCities(Long stateId) {
         return cityRepository.findByStateId(stateId).stream().map(LocationDto::new).toList();
+    }
+
+    public City getCity(Long cityId) {
+        return cityRepository.findById(cityId).orElse(null);
     }
 
     public List<LocationDto> consumeApiCitiesByStates(LocationRequest request) {

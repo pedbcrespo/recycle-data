@@ -1,11 +1,19 @@
 package com.recycle.data.model;
 
-import jakarta.persistence.*;
+import java.util.Collection;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Collection;
 
 @Entity
 @Getter@Setter
@@ -26,8 +34,10 @@ public class RecyclingCenter {
     @ManyToMany
     private Collection<ProductType> recycleProductType;
 
-
-    public boolean isAvailableToSave() {
-        return name != null && address != null;
+    public RecyclingCenter(String name, String address, City city, Collection<ProductType> recycleProductType) {
+        this.name = name;
+        this.address = address;
+        this.city = city;
+        this.recycleProductType = recycleProductType;
     }
 }
