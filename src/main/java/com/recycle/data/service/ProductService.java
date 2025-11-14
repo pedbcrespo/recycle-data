@@ -1,16 +1,17 @@
 package com.recycle.data.service;
 
+import java.util.Collection;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.recycle.data.model.Product;
 import com.recycle.data.model.ProductType;
 import com.recycle.data.model.dto.ProductDto;
 import com.recycle.data.model.request.ProductRequest;
 import com.recycle.data.repository.ProductRepository;
 import com.recycle.data.repository.ProductTypeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -36,6 +37,10 @@ public class ProductService {
 
     public Collection<Product> get(ProductRequest request) {
        return productRepository.findAll(request.getSpecification());
+    }
+
+    public Collection<ProductType> getTypes() {
+        return productTypeRepository.findAll();
     }
 
     private Product createNewProduct(ProductDto newProduct) {
